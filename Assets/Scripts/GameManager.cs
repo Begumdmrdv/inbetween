@@ -135,7 +135,7 @@ public class GameManager : MonoBehaviour
         mergedBlob.name = "Blob";
         mergedBlob.transform.localScale = Vector3.one;
         SetupController(mergedBlob, KeyCode.A, KeyCode.D, KeyCode.W, KeyCode.S, KeyCode.Space, mergedJumpForce);
-        SetBlobColor(mergedBlob, Color.green);
+        //SetBlobColor(mergedBlob, Color.green);
 
         isSplit = false;
         hasShownCloseMessage = false;

@@ -77,7 +77,9 @@ public class GameManager : MonoBehaviour
                 hasShownCloseMessage = false;
             }
 
-            if (distance < mergeDistance)
+            if (distance < mergeDistance &&
+                !IsMergeBlocked() &&
+                CanMergeSafely())
             {
                 MergeBlobs();
             }
@@ -141,6 +143,73 @@ public class GameManager : MonoBehaviour
         hasShownCloseMessage = false;
 
         Debug.Log("BLOBS MERGED! Press E to split again.");
+    }
+    
+    //Checks that if  we have an obstacle between two blobs
+    private bool IsMergeBlocked()
+    {
+        Vector3 start = blobA.transform.position;
+        Vector3 end = blobB.transform.position;
+
+        Vector3 direction = end - start;
+        float distance = direction.magnitude;
+
+        if (distance <= 0.001f)
+            return false;
+
+        RaycastHit[] hits = Physics.RaycastAll(
+            start,
+            direction.normalized,
+            distance,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Ignore
+        );
+
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.collider.GetComponentInParent<BlobController>() != null)
+                continue;
+
+            return true;
+        }
+
+        return false;
+    }
+    
+    //Checks that if the big one blob (the gray one) have enogh area for merge
+    private bool CanMergeSafely()
+    {
+        SphereCollider sphere = blobPrefab.GetComponent<SphereCollider>();
+
+        if (sphere == null)
+            return false;
+
+        Vector3 midPoint =
+            (blobA.transform.position + blobB.transform.position) / 2f;
+
+        float radius = sphere.radius;
+
+        Vector3 center = midPoint + sphere.center;
+
+        Collider[] overlaps = Physics.OverlapSphere(
+            center,
+            radius,
+            Physics.DefaultRaycastLayers,
+            QueryTriggerInteraction.Ignore
+        );
+
+        foreach (Collider col in overlaps)
+        {
+            if (col.GetComponentInParent<BlobController>() != null)
+                continue;
+
+            if (col.gameObject.name == "Ground")
+                continue;
+
+            return false;
+        }
+
+        return true;
     }
 
     // Bir blob'a tuşlarını, hızını ve zıplama gücünü verir
